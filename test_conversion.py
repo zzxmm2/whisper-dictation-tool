@@ -5,7 +5,7 @@ Test script for Chinese character conversion
 
 class TestChineseConverter:
     def __init__(self):
-        # Chinese conversion dictionary (same as in dictation.py)
+        # Chinese conversion dictionary (same as in dictation_integrated_gui.py)
         self._chinese_map = {
             '現': '现', '說': '说', '聽': '听', '嗎': '吗', '學': '学', '記': '记',
             '這': '这', '個': '个', '裡': '里', '邊': '边', '為': '为', '麼': '么',

@@ -78,13 +78,13 @@ chmod +x "$DESKTOP_ENTRY"
 
 # Make scripts executable
 chmod +x launch_dictation.sh
-chmod +x start_dictation_gui.sh
+chmod +x whisper
 
 echo ""
 echo "🎉 Installation completed successfully!"
 echo ""
 echo "📋 Usage:"
-echo "  • GUI Mode: ./start_dictation_gui.sh"
+echo "  • GUI Mode: ./whisper"
 echo "  • Background Mode: ./launch_dictation.sh"
 echo "  • From Applications Menu: Search for 'Whisper Dictation'"
 echo ""

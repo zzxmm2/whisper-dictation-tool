@@ -36,12 +36,7 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=requirements,
-    entry_points={
-        "console_scripts": [
-            "whisper-dictation=dictation:main",
-            "whisper-dictation-gui=dictation_gui:main",
-        ],
-    },
+    # Removed console_scripts to prevent old interface access
     include_package_data=True,
     zip_safe=False,
 )

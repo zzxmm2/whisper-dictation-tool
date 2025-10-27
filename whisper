@@ -1,0 +1,75 @@
+#!/bin/bash
+# Simple whisper command that launches the GUI (modern by default)
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script directory
+cd "$SCRIPT_DIR"
+
+# Helper: detect if first non-flag arg looks like a file
+looks_like_file() {
+	for arg in "$@"; do
+		case "$arg" in
+			-*) ;; # skip flags
+			*)
+				if [ -f "$arg" ]; then
+					return 0
+				fi
+				;;
+		esac
+	done
+	return 1
+}
+
+# If user explicitly wants original whisper
+if [ "$1" = "--original" ] || [ "$1" = "-o" ]; then
+	shift
+	if [ -x "$SCRIPT_DIR/whisper_env/bin/whisper_original" ]; then
+		"$SCRIPT_DIR/whisper_env/bin/whisper_original" "$@"
+	else
+		# Try system whisper if available
+		if command -v whisper &>/dev/null; then
+			whisper "$@"
+		else
+			echo "Error: original whisper CLI not found. Install openai-whisper or activate venv." >&2
+			exit 1
+		fi
+	fi
+	exit $?
+fi
+
+# If arguments include a filename, route to original whisper CLI behavior
+if looks_like_file "$@"; then
+	if [ -x "$SCRIPT_DIR/whisper_env/bin/whisper_original" ]; then
+		"$SCRIPT_DIR/whisper_env/bin/whisper_original" "$@"
+	else
+		if command -v whisper &>/dev/null; then
+			whisper "$@"
+		else
+			echo "Error: Could not find whisper CLI to transcribe file. Install openai-whisper or run install.sh" >&2
+			exit 1
+		fi
+	fi
+	exit $?
+fi
+
+# Prefer venv python if present
+if [ -x "$SCRIPT_DIR/whisper_env/bin/python" ]; then
+	PYTHON_BIN="$SCRIPT_DIR/whisper_env/bin/python"
+else
+	# Fallback to system python3
+	if command -v python3 &>/dev/null; then
+		PYTHON_BIN="$(command -v python3)"
+	else
+		echo "Error: python3 not found. Please install Python 3.8+" >&2
+		exit 1
+	fi
+fi
+
+# Launch the integrated GUI (more stable than modern GUI)
+echo "🎤 Starting Whisper Dictation Tool (Integrated GUI)..."
+echo "💡 Use 'whisper --original --help' for original CLI"
+echo "💡 Provide a filename to transcribe via CLI: whisper <file>"
+
+exec "$PYTHON_BIN" "$SCRIPT_DIR/dictation_integrated_gui.py"

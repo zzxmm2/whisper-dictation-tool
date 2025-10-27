@@ -31,7 +31,7 @@ A powerful speech-to-text dictation tool that uses OpenAI's Whisper model to tra
    ```
 
 3. **Launch the tool:**
-   - **GUI Mode**: `./start_dictation_gui.sh`
+   - **GUI Mode**: `whisper`
    - **Background Mode**: `./launch_dictation.sh`
    - **From Applications Menu**: Search for "Whisper Dictation"
 
@@ -91,7 +91,7 @@ A powerful speech-to-text dictation tool that uses OpenAI's Whisper model to tra
 
 ## Files
 
-- `dictation.py` - Main Python script
+- `dictation_integrated_gui.py` - Main Python script
 - `start_dictation.sh` - Launcher script
 - `whisper_env/` - Python virtual environment
 - **System Integration**: Added to applications menu and favorites
