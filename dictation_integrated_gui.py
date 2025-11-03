@@ -50,7 +50,7 @@ class IntegratedDictationGUI:
         self.frames = []
         self.stream = None
         self.model = None
-        # Use F9 to avoid browser address bar focus (Alt+D)
+        self.hotkey = {keyboard.Key.alt, keyboard.KeyCode.from_char('d')}
         self.current_keys = set()
         self.record_thread = None
         self.last_hotkey_time = 0
@@ -133,10 +133,7 @@ class IntegratedDictationGUI:
     def position_window(self):
         """Position window in top-right corner"""
         screen_width = self.root.winfo_screenwidth()
-        # Place about 25% of screen width away from the right edge
-        window_width = 200
-        right_margin = int(screen_width * 0.25)
-        x = max(0, screen_width - right_margin - window_width)
+        x = screen_width - 220  # 200px width + 20px margin
         y = 20
         self.root.geometry(f"200x100+{x}+{y}")
     
@@ -149,7 +146,7 @@ class IntegratedDictationGUI:
         # Instruction text
         instruction_label = tk.Label(
             main_frame, 
-            text="Pkease use 'Alt + F9' to start/stop", 
+            text="Please use 'Alt + D' to record", 
             font=("Arial", 8), 
             bg='lightgray', 
             fg='black'
@@ -222,25 +219,22 @@ class IntegratedDictationGUI:
                 on_release=self.on_release
             )
             self.listener.start()
-            print("🎤 Dictation tool ready! Press Alt+F9 to start/stop recording.")
+            print("🎤 Dictation tool ready! Press Alt+D to start/stop recording.")
         except Exception as e:
             self.show_error(f"Hotkey listener failed: {e}")
     
     def on_press(self, key):
         """Handle key press events (same as original)"""
         try:
-            # Track currently pressed keys
             self.current_keys.add(key)
-
-            # Trigger on Alt+F9 to avoid conflicting browser shortcuts
-            is_alt = any(k in self.current_keys for k in (keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r))
-            is_f9_now = (key == keyboard.Key.f9)
-            is_f9_held = (keyboard.Key.f9 in self.current_keys)
-            if is_alt and (is_f9_now or is_f9_held):
+            if self.hotkey.issubset(self.current_keys):
                 current_time = time.time()
                 if current_time - self.last_hotkey_time >= self.hotkey_debounce:
                     self.last_hotkey_time = current_time
+                    print(f"🔑 Hotkey triggered at {current_time}")
                     self.root.after(0, self.toggle_recording)
+                else:
+                    print(f"⏸️  Hotkey ignored (debounced)")
         except AttributeError:
             pass
     
@@ -278,7 +272,7 @@ class IntegratedDictationGUI:
         self.record_thread.daemon = True
         self.record_thread.start()
         
-        print("🎤 Recording started... (Press Alt+F9 again to stop)")
+        print("🎤 Recording started... (Press Alt+D again to stop)")
     
     def start_flashing(self):
         """Start flashing animation"""
@@ -391,8 +385,8 @@ class IntegratedDictationGUI:
             result = self.model.transcribe(
                 temp_file,
                 task="transcribe",
-                language="zh",  # Prefer Chinese; English will still be transcribed as-is
-                initial_prompt="本段可能包含中英混合语音。请将中文部分优先以简体中文输出，英文保持原文。",
+                language=None,  # Let Whisper auto-detect
+                initial_prompt="This is a mixed language conversation in Chinese and English. Please transcribe accurately in both languages.",
                 condition_on_previous_text=False,
                 temperature=0.0  # More deterministic output
             )
