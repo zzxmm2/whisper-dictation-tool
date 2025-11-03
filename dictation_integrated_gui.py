@@ -131,9 +131,11 @@ class IntegratedDictationGUI:
         self.setup_hotkey_listener()
         
     def position_window(self):
-        """Position window in top-right corner"""
+        """Position window with right offset"""
         screen_width = self.root.winfo_screenwidth()
-        x = screen_width - 220  # 200px width + 20px margin
+        window_width = 200
+        right_margin = int(screen_width * 0.25)
+        x = max(0, screen_width - right_margin - window_width)
         y = 20
         self.root.geometry(f"200x100+{x}+{y}")
     
@@ -146,7 +148,7 @@ class IntegratedDictationGUI:
         # Instruction text
         instruction_label = tk.Label(
             main_frame, 
-            text="Please use 'Alt + D' to record", 
+            text="Please use 'Alt + F9' to start/stop", 
             font=("Arial", 8), 
             bg='lightgray', 
             fg='black'
@@ -219,22 +221,26 @@ class IntegratedDictationGUI:
                 on_release=self.on_release
             )
             self.listener.start()
-            print("🎤 Dictation tool ready! Press Alt+D to start/stop recording.")
+            print("🎤 Dictation tool ready! Press Alt+F9 to start/stop recording.")
         except Exception as e:
             self.show_error(f"Hotkey listener failed: {e}")
     
     def on_press(self, key):
         """Handle key press events (same as original)"""
         try:
+            # Track currently pressed keys
             self.current_keys.add(key)
-            if self.hotkey.issubset(self.current_keys):
+
+            # Trigger on Alt+F9 only
+            is_alt = any(k in self.current_keys for k in (keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r))
+            is_f9_held = (keyboard.Key.f9 in self.current_keys)
+            is_f9_now = (key == keyboard.Key.f9)
+            should_trigger = (is_alt and (is_f9_now or is_f9_held))
+            if should_trigger:
                 current_time = time.time()
                 if current_time - self.last_hotkey_time >= self.hotkey_debounce:
                     self.last_hotkey_time = current_time
-                    print(f"🔑 Hotkey triggered at {current_time}")
                     self.root.after(0, self.toggle_recording)
-                else:
-                    print(f"⏸️  Hotkey ignored (debounced)")
         except AttributeError:
             pass
     
